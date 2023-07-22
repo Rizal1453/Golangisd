@@ -53,10 +53,11 @@
     </nav>
     <!-- end nav -->
     <section class="w-100 vh-100 bg-secondary">
-      
       <h1 class="p-3 text-center text-white">EDIT MY PROJECT</h1>
-      <form class="w-50 mx-auto" method="post" action="/EditProject">
+      <!-- <form action=""> -->
+      <form class="w-50 mx-auto" method="post" action="/submitEdit">
         <div class="mb-3">
+          <input type="text" value="{{.ProjekDetail.Nama}}" name="Namasbl" />
           <label for="exampleFormControlInput1" class="form-label text-black"
             >Nama Project</label
           >
@@ -103,8 +104,8 @@
             id="exampleFormControlTextarea1"
             rows="3"
             name="Deskripsi"
-            
-          >{{.ProjekDetail.Deskripsi}}</textarea>
+          >
+          </textarea>
         </div>
         <div class="row mb-3">
           <label for="exampleFormControlInput1" class="form-label text-black"

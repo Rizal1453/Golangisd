@@ -22,7 +22,9 @@ type Data struct{
 	Golang string
 }
 
-var dataBlog = []Data{}
+
+var dataBlog = []Data{} //variable kosong
+
 
 func main() {
 	e := echo.New()
@@ -34,15 +36,54 @@ func main() {
 	e.GET("/AddProject",Project)
 	e.GET("/DetailProject/:id",DetailProject)
 
-	e.POST("/AdProject",AdProject)
+	e.POST("/submitProject",AdProject)
+	e.POST("/submitEdit",SubmitEEDIT)
 	e.GET("/EditProject/:id",EditProject)
-	e.GET("/Detail/:id",EditProject)
-	e.GET("/Delete/:id",deleteBlog)
+	e.POST("/Delete",deleteBlog)
 
 
 	e.Logger.Fatal(e.Start("localhost:5000"))
 }
+func SubmitEEDIT(c echo.Context) error {
+    // Parse form data dari permintaan
+    err := c.Request().ParseForm()
+    if err != nil {
+        return c.String(http.StatusInternalServerError, "Gagal memproses data form")
+    }
 
+    // Dapatkan id dari parameter URL
+    nama := c.FormValue("Namasbl")
+
+    // Cari proyek dalam array dataBlog dengan nama yang cocok
+    var projectToUpdate *Data
+    for i, project := range dataBlog {
+        if project.Nama == nama {
+            projectToUpdate = &dataBlog[i]
+            break
+        }
+    }
+
+    // Jika proyek dengan nama yang diberikan tidak ditemukan, kembalikan pesan error
+    if projectToUpdate == nil {
+        return c.String(http.StatusNotFound, "Proyek tidak ditemukan")
+    }
+
+    // Update data proyek dengan nilai-nilai baru dari form
+    projectToUpdate.Nama = c.FormValue("Nama")
+    projectToUpdate.PostDate = c.FormValue("Mulai")
+    projectToUpdate.EndDate = c.FormValue("Akhir")
+    projectToUpdate.Durasi = durasiTanggal(projectToUpdate.PostDate ,projectToUpdate.EndDate)
+    projectToUpdate.Deskripsi = c.FormValue("Deskripsi")
+    projectToUpdate.ReactJs = c.FormValue("ReactJs")
+    projectToUpdate.NodeJs = c.FormValue("NodeJs")
+    projectToUpdate.JavaScript = c.FormValue("JavaScript")
+    projectToUpdate.Golang = c.FormValue("Golang")
+
+    // Redirect pengguna ke halaman detail proyek setelah berhasil mengedit
+    return c.Redirect(http.StatusSeeOther, "/Home")
+}
+
+ 
 func Home(c echo.Context) error {
 	tmpl,err := template.ParseFiles("Views/index.html")
 if err != nil{
@@ -52,7 +93,7 @@ if err != nil{
 		"Projek" : dataBlog,
 		
 	}
-	fmt.Println(dataBlog)
+	fmt.Println("dari home ",dataBlog)
 return tmpl.Execute(c.Response(),data)
 }
 
@@ -102,7 +143,7 @@ func DetailProject(c echo.Context) error {
 	}
 
 	data := map[string]interface{}{
-		"Id":     id,
+		
 		"ProjekDetail": details,
 	}
 	return tmpl.Execute(c.Response(), data)
@@ -120,7 +161,7 @@ func AdProject(c echo.Context)error{
 	Durasi := durasiTanggal(Start ,End)
 
 	BlogData := Data{
-		Nama: Nama,
+		Nama: Nama, // STrruct , variabel dari form
 		PostDate: Start,
 		EndDate: End,
 		Deskripsi: Deskripsi,
@@ -137,7 +178,7 @@ func AdProject(c echo.Context)error{
 	dataBlog = append(dataBlog, BlogData)
 	
 	
-
+fmt.Println("dari form",dataBlog)
 
 	return c.Redirect(http.StatusMovedPermanently,"/Home")
 	
@@ -146,6 +187,7 @@ func AdProject(c echo.Context)error{
 
 func EditProject(c echo.Context)error  {
 	id := c.Param("id")
+	
 
 	tmpl, err := template.ParseFiles("Views/EditProject.html")
 	if err != nil {
@@ -155,25 +197,26 @@ func EditProject(c echo.Context)error  {
 	}
 
 	stc,_ := strconv.Atoi(id)
-	detail := Data{}
-	for index, data := range dataBlog{
+	detail := Data{} 
+
+	for index, item := range dataBlog{
 		if index == stc {
 			detail = Data{
-				Nama: data.Nama,
-				PostDate: data.PostDate,
-				EndDate: data.EndDate,
-				Deskripsi: data.Deskripsi,
-				ReactJs: data.ReactJs,
-				NodeJs: data.NodeJs,
-				JavaScript: data.JavaScript,
-				Golang: data.Golang,
+				Nama: item.Nama,
+				PostDate: item.PostDate,
+				EndDate: item.EndDate,
+				Deskripsi: item.Deskripsi,
+				ReactJs: item.ReactJs,
+				NodeJs: item.NodeJs,
+				JavaScript: item.JavaScript,
+				Golang: item.Golang,
 
 			}
 		}
 	}
 
 	data := map [string]interface{}{
-		"id" : id,
+		
 		"ProjekDetail" : detail,
 	}
 
@@ -205,8 +248,7 @@ func durasiTanggal(start string, endDate string) string {
 }
 
 func deleteBlog(c echo.Context) error {
-	id := c.Param("id")
-
+	id := c.FormValue("index")
 	idToInt, _ := strconv.Atoi(id)
 
 	dataBlog = append(dataBlog[:idToInt], dataBlog[idToInt+1:]...)

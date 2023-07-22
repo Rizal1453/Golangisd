@@ -132,9 +132,11 @@
               <a href="/DetailProject/{{$index}}" class="btn btn-primary w-50"
                 >Detail</a
               >
-              <a href="/Delete/{{$index}}" class="btn btn-primary w-50"
-                >Delete</a
-              >
+
+              <form action="/Delete" method="POST">
+                <input type="text" name="index" value="{{$index}}" hidden />
+                <button class="btn btn-danger" type="submit">Delete</button>
+              </form>
             </div>
           </div>
         </div>
